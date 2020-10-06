@@ -1,6 +1,16 @@
+import 'reflect-metadata';
+import connection from './config/dbconfig';
 import CtfBot from './bot';
 
-const bot = new CtfBot();
+connection()
+    .then(() => {
+        console.log('> Successfully connected database');
 
-bot.init();
-bot.listen();
+        const bot = new CtfBot();
+
+        bot.init();
+        bot.listen();
+    })
+    .catch(({ code, sqlMessage }) => {
+        console.log(`Failure to connect to database: ${sqlMessage} [${code}]`);
+    });
