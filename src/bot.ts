@@ -1,4 +1,4 @@
-import { Client, Message } from 'discord.js';
+import { Client, Message, User } from 'discord.js';
 import { Command, Secrets } from './constants';
 
 class CtfBot {
@@ -14,7 +14,9 @@ class CtfBot {
     };
 
     listen = () => {
-        console.log('> Bot started listening');
+        this.client.on('ready', () => {
+            console.log('> Bot started listening');
+        });
 
         this.client.on('message', (message: Message) => {
             if (!message.content.startsWith(this.keyword)) return;
@@ -39,8 +41,12 @@ class CtfBot {
         });
     };
 
+    public static mention = (user: User): string => {
+        return `<@${user.id}>`;
+    }
+
     private error = (message: Message): void => {
-        message.channel.send('I don\'t recognize what you wanted to do.');
+        message.channel.send(`${CtfBot.mention(message.author)} I wasn't able to recognize what you wanted to do.`);
     };
 
     private ping = (message: Message): void => {
