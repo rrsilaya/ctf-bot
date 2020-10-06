@@ -28,4 +28,9 @@ export class Challenge extends DefaultEntity {
     @ManyToMany(type => User, { eager: true })
     @JoinTable()
     solvers: User[];
+
+    public static getBasePoint(level: number): number {
+        const points = [100, 80, 50, 20, 10];
+        return points[level - 1];
+    }
 }

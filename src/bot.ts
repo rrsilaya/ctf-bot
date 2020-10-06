@@ -1,9 +1,12 @@
 import { Client, Message, User } from 'discord.js';
+import { ServerController } from '@controllers';
 import { Command, Secrets } from './constants';
 
 class CtfBot {
     private client: Client = new Client();
     private keyword: string;
+
+    private server = new ServerController();
 
     constructor(keyword: string = '-ctf') {
         this.keyword = `${keyword} `;
@@ -22,24 +25,40 @@ class CtfBot {
             if (!message.content.startsWith(this.keyword)) return;
 
             const text = message.content.replace(this.keyword, '');
+            message.content = text;
+
             if (!text) {
                 this.error(message);
                 return;
             }
 
-            const [command, ...args] = text.split(' ');
+            const [command] = text.split(' ');
+            this.handleCommand(message, command);
+        });
+    };
 
+    private handleCommand = (message: Message, command: string): void => {
+        try {
             switch (command) {
                 case Command.PING:
                     this.ping(message);
+                    break;
+
+                case Command.CONFIG:
+                    this.server.initialize(message);
                     break;
 
                 default:
                     this.error(message);
                     break;
             }
-        });
-    };
+        } catch (error) {
+            console.log(error);
+
+            const message = error.message || 'An error occured.';
+            message.channel.send(`${CtfBot.mention(message.author)} ${message}`);
+        }
+    }
 
     public static mention = (user: User): string => {
         return `<@${user.id}>`;

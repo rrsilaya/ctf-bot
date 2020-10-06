@@ -1,5 +1,6 @@
 import { BaseEntity, Entity } from 'typeorm';
 import { validate as validator } from 'class-validator';
+import { BotError, ErrorCode } from '../errors';
 
 @Entity()
 export class ValidEntity extends BaseEntity {
@@ -8,13 +9,15 @@ export class ValidEntity extends BaseEntity {
 
         if (!errors.length) resolve();
 
-        reject({
-            code: 'INVALID_INPUT',
-            errors: errors.reduce((err, { constraints }) => {
-                err.push(...Object.values(constraints));
-                return err;
-            }, []),
-        });
+        reject(
+            new BotError(
+                ErrorCode.INVALID_INPUT,
+                errors.reduce((err, { constraints }) => {
+                    err.push(...Object.values(constraints));
+                    return err;
+                }, []).join(', ')
+            )
+        );
     });
 }
 

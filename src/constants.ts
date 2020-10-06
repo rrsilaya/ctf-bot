@@ -24,4 +24,5 @@ export const Secrets = {
 
 export enum Command {
     PING = 'ping',
+    CONFIG = 'config',
 };

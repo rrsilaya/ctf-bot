@@ -15,7 +15,7 @@
             "@models/*": ["models/*"],
             "@decorators": ["decorators/"],
             "@handlers": ["handlers/"],
-            "@middlewares": ["middlewares/"],
+            "@controllers": ["controllers/"],
             "@utils": ["utils/"]
         },
         "skipLibCheck": true
