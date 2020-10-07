@@ -14,7 +14,7 @@ export class BaseController {
 
         return args.reduce((mapping, arg, i) => ({
             ...mapping,
-            [params[i]]: arg,
+            [params[i]]: arg.replace(/"/g, ''),
         }), {});
     }
 

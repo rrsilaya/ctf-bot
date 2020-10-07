@@ -41,10 +41,7 @@ export class ChallengeController extends BaseController {
         const challengeId = this.parseChallengeId(message, args.id);
 
         const flag = this.parseFlag(message, args.flag);
-        const challenge = await Challenge.findOne({
-            where: { id: challengeId },
-            relations: ['author'],
-        });
+        const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
 
         const authorId = message.author.id;
 
@@ -67,7 +64,7 @@ export class ChallengeController extends BaseController {
             message.channel.send(`Successfully set flag to challenge ${args.id}`);
 
             if (shouldNotifyEveryone) {
-                message.channel.send(`@everyone A new CTF challenge has been created by <@${authorId}>!\n\n**CTF ID:** ${args.id}\n**Title:** ${challenge.title}\n**Description/Clue:** ${challenge.description}\n**Level:** Level ${challenge.level}\n\nGood luck!`);
+                message.channel.send(`@everyone A new CTF challenge has been created by <@${authorId}>!\n\n**CTF Code:** ${args.id}\n**Title:** ${challenge.title}\n**Description/Clue:** ${challenge.description}\n**Level:** Level ${challenge.level}\n\nGood luck!`);
             }
         } catch (error) {
             message.channel.send(`Unable to set the flag: ${error.message}`);
@@ -83,12 +80,46 @@ export class ChallengeController extends BaseController {
         const flag = this.parseFlag(message, args.flag);
         const user = await User.findOne({ userId: message.author.id });
 
+        const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
+        if (!challenge) {
+            message.channel.send(`Challenge ${args.id} does not exist.`);
+            return;
+        }
+
         try {
-            const answer = await ChallengeHandler.submit(challengeId, flag, user);
+            const answer = await ChallengeHandler.submit(challenge, flag, user);
 
             message.channel.send(`<@${user.userId}> has captured the flag for challenge ${args.id} and gained ${answer.score} points!`);
         } catch (error) {
             message.channel.send(error.message);
         }
+    }
+
+    list = async (message: Message): Promise<void> => {
+        const user = await User.findOne({ userId: message.author.id });
+        const server = await Server.findOne({ guildId: message.guild.id });
+
+        const challenges = await ChallengeHandler.list(user, server);
+
+        if (!challenges) {
+            message.channel.send('No CTF challenges yet.');
+        }
+
+        const list = challenges.reduce((list, challenge) => `${list}0x${challenge.id.toString(16).padStart(4, '0')}: ${challenge.title} (Level ${challenge.level}) ${challenge.solved ? '✅' : ''}\n`, '');
+        message.channel.send(`<@${user.userId}> **CHALLENGES FOR YOU:**\n${list}`);
+    }
+
+    info = async (message: Message): Promise<void> => {
+        const args = this.getArgs(message, ['id']);
+        const challengeId = this.parseChallengeId(message, args.id);
+
+        const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
+
+        if (!challenge) {
+            message.channel.send(`Challenge ${args.id} does not exist.`);
+            return;
+        }
+
+        message.channel.send(`**Challenge ${args.id}:** ${challenge.title}\n**Clue/Description:** ${challenge.description}\n**Difficulty:** Level ${challenge.level}\n**Solvers:** ${challenge.answers.length}`);
     }
 }

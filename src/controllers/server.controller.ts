@@ -26,6 +26,7 @@ export class ServerController extends BaseController {
 
         if (!leaderboard.length) {
             message.channel.send('No data for leaderboard yet.');
+            return;
         }
 
         const ranking = leaderboard.reduce((ranking, user, rank) => `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`, '');

@@ -30,4 +30,6 @@ export enum Command {
     TEST = 'test',
     SUBMIT = 'submit',
     LEADERBOARD = 'leaderboard',
+    LIST = 'list',
+    INFO = 'info',
 };

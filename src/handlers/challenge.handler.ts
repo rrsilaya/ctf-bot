@@ -38,16 +38,7 @@ export class ChallengeHandler {
         return challenge;
     }
 
-    static submit = async (challengeId: number, flag: string, user: User): Promise<Answer> => {
-        const challenge = await Challenge.findOne({
-            where: { id: challengeId },
-            relations: ['answers'],
-        });
-
-        if (!challenge) {
-            throw new BotError(ErrorCode.CHALLENGE_NOT_FOUND, 'CTF Challenge does not exist.');
-        }
-
+    static submit = async (challenge: Challenge, flag: string, user: User): Promise<Answer> => {
         const answered = await Answer.findOne({
             where: {
                 user: { id: user.id },
@@ -74,6 +65,29 @@ export class ChallengeHandler {
         await challenge.save();
 
         return answer;
+    }
+
+    static list = async (user: User, server: Server): Promise<any> => {
+        const result = await Challenge.createQueryBuilder('challenge')
+            .select('challenge')
+            .addSelect('NOT ISNULL(answer.id)', 'solved')
+            .leftJoin(
+                'challenge.answers',
+                'answer',
+                'answer.challengeId = challenge.id AND answer.userId = :userId',
+                { userId: user.id }
+            )
+            .where({ server })
+            .andWhere('challenge.flag IS NOT NULL')
+            .orderBy('challenge.id')
+            .getRawMany();
+
+        return result.map(row => ({
+            id: row.challenge_id,
+            title: row.challenge_title,
+            level: row.challenge_level,
+            solved: !!(+row.solved),
+        }));
     }
 
     static getScore = (solvers: number, basePoint: number): number => {

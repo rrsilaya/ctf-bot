@@ -39,4 +39,21 @@ export class Challenge extends DefaultEntity {
         const points = [10, 25, 50, 80, 100];
         return points[this.level - 1];
     }
+
+    static async getByGuild(challengeId: number, guildId: string): Promise<Challenge> {
+        const challenge = await Challenge.createQueryBuilder('challenge')
+            .select('challenge')
+            .leftJoinAndSelect(
+                'challenge.server',
+                'server',
+                'server.guildId = :guildId',
+                { guildId }
+            )
+            .leftJoinAndSelect('challenge.author', 'author')
+            .leftJoinAndSelect('challenge.answers', 'answers')
+            .where('challenge.id = :challengeId', { challengeId })
+            .getOne();
+
+        return challenge;
+    }
 }
