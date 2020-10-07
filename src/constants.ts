@@ -29,4 +29,5 @@ export enum Command {
     SET_FLAG = 'set-flag',
     TEST = 'test',
     SUBMIT = 'submit',
+    LEADERBOARD = 'leaderboard',
 };

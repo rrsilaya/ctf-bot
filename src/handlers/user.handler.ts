@@ -18,14 +18,25 @@ export class UserHandler {
         return user;
     }
 
-    // static getLeaderboard = async (server: Server): Promise<User> => {
-    //     const user = await User.createQueryBuilder('user')
-    //         .select('user')
-    //         .innerJoinAndSelect(
-    //             'user.servers',
-    //             'server',
-    //             'server.id = :serverId',
-    //             { serverId: server.id }
-    //         )
-    // }
+    static getLeaderboard = async (server: Server): Promise<ReadonlyArray<any>> => {
+        const users = await User.createQueryBuilder('user')
+            .select('user')
+            .addSelect('SUM(answer.score)', 'score')
+            .innerJoin('user.answers', 'answer')
+            .innerJoin(
+                'answer.challenge',
+                'challenge',
+                'answer.challengeId = challenge.id AND challenge.serverId = :serverId',
+                { serverId: server.id }
+            )
+            .orderBy('score', 'DESC')
+            .groupBy('user.id')
+            .limit(15)
+            .getRawMany();
+
+        return users.map(user => ({
+            userId: user.user_userId,
+            score: +user.score,
+        }));
+    }
 }

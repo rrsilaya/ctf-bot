@@ -64,6 +64,10 @@ class CtfBot {
                     this.challenge.submit(message);
                     break;
 
+                case Command.LEADERBOARD:
+                    this.server.getLeaderboard(message);
+                    break;
+
                 // case Command.TEST:
                 //     this.challenge.test(message);
                 //     break;

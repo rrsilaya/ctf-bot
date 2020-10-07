@@ -1,5 +1,5 @@
 import { Message} from 'discord.js';
-import { ChallengeHandler, UserHandler } from '@handlers';
+import { ChallengeHandler } from '@handlers';
 import {
     Challenge,
     Server,
