@@ -32,4 +32,5 @@ export enum Command {
     LEADERBOARD = 'leaderboard',
     LIST = 'list',
     INFO = 'info',
+    DELETE = 'delete',
 };

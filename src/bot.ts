@@ -76,6 +76,10 @@ class CtfBot {
                     this.challenge.info(message);
                     break;
 
+                case Command.DELETE:
+                    this.challenge.delete(message);
+                    break;
+
                 // case Command.TEST:
                 //     this.challenge.test(message);
                 //     break;

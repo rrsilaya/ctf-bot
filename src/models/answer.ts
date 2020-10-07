@@ -12,9 +12,9 @@ export class Answer extends DefaultEntity {
     @Column()
     score: number;
 
-    @ManyToOne(type => User, user => user.answers)
+    @ManyToOne(type => User, user => user.answers, { onDelete: 'CASCADE' })
     user: User;
 
-    @ManyToOne(type => Challenge, challenge => challenge.answers)
+    @ManyToOne(type => Challenge, challenge => challenge.answers, { onDelete: 'CASCADE' })
     challenge: Challenge;
 }

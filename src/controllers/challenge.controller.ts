@@ -103,10 +103,30 @@ export class ChallengeController extends BaseController {
 
         if (!challenges) {
             message.channel.send('No CTF challenges yet.');
+            return;
         }
 
         const list = challenges.reduce((list, challenge) => `${list}0x${challenge.id.toString(16).padStart(4, '0')}: ${challenge.title} (Level ${challenge.level}) ${challenge.solved ? '✅' : ''}\n`, '');
         message.channel.send(`<@${user.userId}> **CHALLENGES FOR YOU:**\n${list}`);
+    }
+
+    delete = async (message: Message): Promise<void> => {
+        const args = this.getArgs(message, ['id']);
+        const challengeId = this.parseChallengeId(message, args.id);
+
+        const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
+        if (!challenge) {
+            message.channel.send(`Challenge ${args.id} does not exist.`);
+            return;
+        }
+
+        if (challenge.author.userId !== message.author.id) {
+            message.channel.send('You do not have permission to delete this challenge.');
+            return;
+        }
+
+        await challenge.remove();
+        message.channel.send(`<@${message.author.id}> removed challenge ${args.id}.`);
     }
 
     info = async (message: Message): Promise<void> => {
@@ -114,7 +134,6 @@ export class ChallengeController extends BaseController {
         const challengeId = this.parseChallengeId(message, args.id);
 
         const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
-
         if (!challenge) {
             message.channel.send(`Challenge ${args.id} does not exist.`);
             return;
