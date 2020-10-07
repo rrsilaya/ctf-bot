@@ -60,6 +60,10 @@ class CtfBot {
                     this.challenge.setFlag(message);
                     break;
 
+                case Command.SUBMIT:
+                    this.challenge.submit(message);
+                    break;
+
                 // case Command.TEST:
                 //     this.challenge.test(message);
                 //     break;

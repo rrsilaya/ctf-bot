@@ -13,6 +13,9 @@ export class User extends DefaultEntity {
     @Column()
     userId: string;
 
+    @Column({ default: 0 })
+    score: number;
+
     @OneToMany(type => Challenge, challenge => challenge.author)
     authoredChallenges: Challenge[];
 

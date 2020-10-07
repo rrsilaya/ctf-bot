@@ -36,8 +36,8 @@ export class Challenge extends DefaultEntity {
     @JoinTable()
     solvers: User[];
 
-    public static getBasePoint(level: number): number {
-        const points = [100, 80, 50, 25, 10];
-        return points[level - 1];
+    getBasePoint(): number {
+        const points = [10, 25, 50, 80, 100];
+        return points[this.level - 1];
     }
 }

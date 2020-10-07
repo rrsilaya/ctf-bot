@@ -17,4 +17,32 @@ export class BaseController {
             [params[i]]: arg,
         }), {});
     }
+
+    parseChallengeId = (message: Message, challengeId: string): number => {
+        const regex = /0x([0-9a-f]{4})/;
+
+        if (!regex.test(challengeId)) {
+            const error = `<@${message.author.id}> Invalid challenge id: ${challengeId}`;
+
+            message.channel.send(error);
+            throw new BotError(ErrorCode.INVALID_ARGUMENT_COUNT, error);
+        }
+
+        const [, id] = challengeId.match(regex);
+        return parseInt(id, 16);
+    }
+
+    parseFlag = (message: Message, flag: string): string => {
+        const regex = /^\|?\|?(flag\{[A-Za-z0-9]+\})\|?\|?$/;
+
+        if (!regex.test(flag)) {
+            const error = 'Invalid flag format.';
+
+            message.channel.send(error);
+            throw new BotError(ErrorCode.INVALID_INPUT, error);
+        }
+
+        const [, parsedFlag] = flag.match(regex);
+        return parsedFlag;
+    }
 }

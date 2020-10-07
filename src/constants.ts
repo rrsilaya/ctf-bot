@@ -28,4 +28,5 @@ export enum Command {
     CREATE = 'create',
     SET_FLAG = 'set-flag',
     TEST = 'test',
+    SUBMIT = 'submit',
 };

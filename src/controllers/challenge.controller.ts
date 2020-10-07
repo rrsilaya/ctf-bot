@@ -38,9 +38,9 @@ export class ChallengeController extends BaseController {
         message.delete(); // Make sure to delete flag
 
         const args = this.getArgs(message, ['id', 'flag']);
-        const flag = args.flag.replace(/\|\|/g, ''); // remove mark as spoiler
+        const challengeId = this.parseChallengeId(message, args.id);
 
-        const challengeId = parseInt(args.id.replace('0x', ''), 16);
+        const flag = this.parseFlag(message, args.flag);
         const challenge = await Challenge.findOne({
             where: { id: challengeId },
             relations: ['author'],
@@ -71,6 +71,26 @@ export class ChallengeController extends BaseController {
             }
         } catch (error) {
             message.channel.send(`Unable to set the flag: ${error.message}`);
+        }
+    }
+
+    submit = async (message: Message): Promise<void> => {
+        message.delete(); // delete flag immediately
+
+        const args = this.getArgs(message, ['id', 'flag']);
+        const challengeId = this.parseChallengeId(message, args.id);
+
+        const flag = this.parseFlag(message, args.flag);
+        const user = await User.findOne({ userId: message.author.id });
+
+        try {
+            const previousScore = user.score;
+            const solver = await ChallengeHandler.submit(challengeId, flag, user);
+
+            const score = solver.score - previousScore;
+            message.channel.send(`<@${user.userId}> has captured the flag for challenge ${args.id} and gained ${score} points!`);
+        } catch (error) {
+            message.channel.send(error.message);
         }
     }
 }
