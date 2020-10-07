@@ -1,11 +1,15 @@
 import { Client, Message, User } from 'discord.js';
-import { ServerController } from '@controllers';
+import {
+    ChallengeController,
+    ServerController,
+} from '@controllers';
 import { Command, Secrets } from './constants';
 
 class CtfBot {
     private client: Client = new Client();
     private keyword: string;
 
+    private challenge = new ChallengeController();
     private server = new ServerController();
 
     constructor(keyword: string = '-ctf') {
@@ -47,6 +51,18 @@ class CtfBot {
                 case Command.CONFIG:
                     this.server.initialize(message);
                     break;
+
+                case Command.CREATE:
+                    this.challenge.create(message);
+                    break;
+
+                case Command.SET_FLAG:
+                    this.challenge.setFlag(message);
+                    break;
+
+                // case Command.TEST:
+                //     this.challenge.test(message);
+                //     break;
 
                 default:
                     this.error(message);

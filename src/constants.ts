@@ -25,4 +25,7 @@ export const Secrets = {
 export enum Command {
     PING = 'ping',
     CONFIG = 'config',
+    CREATE = 'create',
+    SET_FLAG = 'set-flag',
+    TEST = 'test',
 };
