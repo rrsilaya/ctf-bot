@@ -17,4 +17,15 @@ export class UserHandler {
         await user.save();
         return user;
     }
+
+    // static getLeaderboard = async (server: Server): Promise<User> => {
+    //     const user = await User.createQueryBuilder('user')
+    //         .select('user')
+    //         .innerJoinAndSelect(
+    //             'user.servers',
+    //             'server',
+    //             'server.id = :serverId',
+    //             { serverId: server.id }
+    //         )
+    // }
 }

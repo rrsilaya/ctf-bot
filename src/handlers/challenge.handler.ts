@@ -1,4 +1,4 @@
-import { Challenge, User, Server } from '@models';
+import { Answer, Challenge, User, Server } from '@models';
 import { BotError, ErrorCode } from '../errors';
 
 export class ChallengeHandler {
@@ -38,17 +38,23 @@ export class ChallengeHandler {
         return challenge;
     }
 
-    static submit = async (challengeId: number, flag: string, user: User): Promise<User> => {
+    static submit = async (challengeId: number, flag: string, user: User): Promise<Answer> => {
         const challenge = await Challenge.findOne({
             where: { id: challengeId },
-            relations: ['solvers'],
+            relations: ['answers'],
         });
 
         if (!challenge) {
             throw new BotError(ErrorCode.CHALLENGE_NOT_FOUND, 'CTF Challenge does not exist.');
         }
 
-        if (challenge.solvers.find(solver => solver.id === user.id)) {
+        const answered = await Answer.findOne({
+            where: {
+                user: { id: user.id },
+                challenge: { id: challenge.id },
+            },
+        });
+        if (answered) {
             throw new BotError(ErrorCode.CHALLENGE_ALREADY_SOLVED, `<@${user.userId}> You already answered this challenge.`);
         }
 
@@ -56,6 +62,21 @@ export class ChallengeHandler {
             throw new BotError(ErrorCode.INCORRECT_FLAG, `<@${user.userId}> You submitted an incorrect flag.`);
         }
 
+        const solvers = challenge.answers.length;
+        const basePoint = challenge.getBasePoint();
+        const score = ChallengeHandler.getScore(solvers, basePoint);
+
+        const answer = new Answer();
+        Object.assign(answer, { score, user, challenge });
+        await answer.save();
+
+        challenge.answers.push(answer);
+        await challenge.save();
+
+        return answer;
+    }
+
+    static getScore = (solvers: number, basePoint: number): number => {
         /**
          * Scoring logic:
          * 1st and 2nd: 100% score
@@ -63,21 +84,10 @@ export class ChallengeHandler {
          * 7th to 15th: 80% score
          * 16th and beyod: 70% score
          */
-        const solvers = challenge.solvers.length;
-        const basePoint = challenge.getBasePoint();
-
         const tiers = [2, 6, 15, Infinity];
         const multipliers = [1, 0.9, 0.8, 0.7];
 
         const solverTier = tiers.findIndex(tier => solvers < tier);
-        const score = Math.floor(multipliers[solverTier] * basePoint);
-
-        challenge.solvers.push(user);
-        await challenge.save();
-
-        user.score += score
-        await user.save();
-
-        return user;
+        return Math.floor(multipliers[solverTier] * basePoint);
     }
 }

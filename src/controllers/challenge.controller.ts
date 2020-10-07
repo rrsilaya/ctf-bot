@@ -84,11 +84,9 @@ export class ChallengeController extends BaseController {
         const user = await User.findOne({ userId: message.author.id });
 
         try {
-            const previousScore = user.score;
-            const solver = await ChallengeHandler.submit(challengeId, flag, user);
+            const answer = await ChallengeHandler.submit(challengeId, flag, user);
 
-            const score = solver.score - previousScore;
-            message.channel.send(`<@${user.userId}> has captured the flag for challenge ${args.id} and gained ${score} points!`);
+            message.channel.send(`<@${user.userId}> has captured the flag for challenge ${args.id} and gained ${answer.score} points!`);
         } catch (error) {
             message.channel.send(error.message);
         }
