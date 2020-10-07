@@ -1,4 +1,4 @@
-import { Message} from 'discord.js';
+import { Message, TextChannel} from 'discord.js';
 import { ChallengeHandler } from '@handlers';
 import {
     Challenge,
@@ -60,11 +60,13 @@ export class ChallengeController extends BaseController {
 
         try {
             await ChallengeHandler.setFlag(challenge, flag);
-
             message.channel.send(`Successfully set flag to challenge ${args.id}`);
 
             if (shouldNotifyEveryone) {
-                message.channel.send(`@everyone A new CTF challenge has been created by <@${authorId}>!\n\n**CTF Code:** ${args.id}\n**Title:** ${challenge.title}\n**Description/Clue:** ${challenge.description}\n**Level:** Level ${challenge.level}\n\nGood luck!`);
+                const server = await Server.findOne({ guildId: message.guild.id });
+                const channel = message.guild.channels.cache.get(server.channelId) as TextChannel;
+
+                channel.send(`@everyone A new CTF challenge has been created by <@${authorId}>!\n\n**CTF Code:** ${args.id}\n**Title:** ${challenge.title}\n**Description/Clue:** ${challenge.description}\n**Level:** Level ${challenge.level}\n\nGood luck!`);
             }
         } catch (error) {
             message.channel.send(`Unable to set the flag: ${error.message}`);
