@@ -74,10 +74,10 @@ export class ChallengeHandler {
             .leftJoin(
                 'challenge.answers',
                 'answer',
-                'answer.challengeId = challenge.id AND answer.userId = :userId',
+                'answer.userId = :userId',
                 { userId: user.id }
             )
-            .where({ server })
+            .where('challenge.serverId = :serverId', { serverId: server.id })
             .andWhere('challenge.flag IS NOT NULL')
             .orderBy('challenge.id')
             .getRawMany();

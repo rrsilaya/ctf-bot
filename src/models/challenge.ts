@@ -43,7 +43,7 @@ export class Challenge extends DefaultEntity {
     static async getByGuild(challengeId: number, guildId: string): Promise<Challenge> {
         const challenge = await Challenge.createQueryBuilder('challenge')
             .select('challenge')
-            .leftJoinAndSelect(
+            .innerJoinAndSelect(
                 'challenge.server',
                 'server',
                 'server.guildId = :guildId',
