@@ -33,7 +33,7 @@ export class BaseController {
     }
 
     parseFlag = (message: Message, flag: string): string => {
-        const regex = /^\|?\|?(flag\{[A-Za-z0-9]+\})\|?\|?$/;
+        const regex = /^\|?\|?(flag\{[A-Za-z0-9_]+\})\|?\|?$/;
 
         if (!regex.test(flag)) {
             const error = 'Invalid flag format.';

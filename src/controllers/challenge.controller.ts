@@ -73,7 +73,7 @@ export class ChallengeController extends BaseController {
                     .setDescription(challenge.description)
                     .addField('Difficulty', `Level ${challenge.level}`);
 
-                channel.send(`@everyone A new CTF challenge has been created by <@${authorId}>!`);
+                channel.send(`A new CTF challenge has been created by <@${authorId}>!`);
                 channel.send(embed);
             }
         } catch (error) {
