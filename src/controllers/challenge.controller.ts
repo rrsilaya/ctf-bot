@@ -88,7 +88,8 @@ export class ChallengeController extends BaseController {
         const challengeId = this.parseChallengeId(message, args.id);
 
         const flag = this.parseFlag(message, args.flag);
-        const user = await User.findOne({ userId: message.author.id });
+        const server = await Server.findOne({ guildId: message.guild.id });
+        const user = await User.registerOrFindOne(message.author.id, server);
 
         const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
         if (!challenge) {
@@ -110,8 +111,8 @@ export class ChallengeController extends BaseController {
     }
 
     list = async (message: Message): Promise<void> => {
-        const user = await User.findOne({ userId: message.author.id });
         const server = await Server.findOne({ guildId: message.guild.id });
+        const user = await User.registerOrFindOne(message.author.id, server);
 
         const challenges = await ChallengeHandler.list(user, server);
 
