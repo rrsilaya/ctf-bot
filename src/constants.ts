@@ -27,10 +27,10 @@ export enum Command {
     CONFIG = 'config',
     CREATE = 'create',
     SET_FLAG = 'set-flag',
-    TEST = 'test',
     SUBMIT = 'submit',
     LEADERBOARD = 'leaderboard',
     LIST = 'list',
     INFO = 'info',
     DELETE = 'delete',
+    HELP = 'help',
 };

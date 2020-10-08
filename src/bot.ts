@@ -80,9 +80,9 @@ class CtfBot {
                     this.challenge.delete(message);
                     break;
 
-                // case Command.TEST:
-                //     this.challenge.test(message);
-                //     break;
+                case Command.HELP:
+                    this.help(message);
+                    break;
 
                 default:
                     this.error(message);
@@ -107,6 +107,23 @@ class CtfBot {
     private ping = (message: Message): void => {
         message.channel.send('pong');
     };
+
+    private help = (message: Message): void => {
+        const commands = [
+            '- `ping`: Check bot availability',
+            '- `config <channel-name>`: Setup Discord server config',
+            '- `create <level> <title> <description>`: Create new CTF challenge',
+            '- `set-flag <ctf-id> <flag>`: Set flag to a given challenge',
+            '- `submit <ctf-id> <flag>`: Submit flag, please enclose the flag with `||` to avoid revealing it to other users',
+            '- `leaderboard`: Show leaderboard',
+            '- `list`: List CTF challenges',
+            '- `info <ctf-id>`: Show info on a given challenge',
+            '- `delete <ctf-id>`: Delete CTF challenge',
+            '- `help`: Show this help message',
+        ];
+
+        message.channel.send(`**To interact with CTF bot, use \`-ctf\` followed by any of the commands below:**\n${commands.join('\n')}`);
+    }
 }
 
 export default CtfBot;
