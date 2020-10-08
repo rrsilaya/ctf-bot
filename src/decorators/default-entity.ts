@@ -1,5 +1,4 @@
 import {
-    BeforeInsert,
     BeforeUpdate,
     Column,
     PrimaryGeneratedColumn,
@@ -14,15 +13,7 @@ export class DefaultEntity extends ValidEntity {
     active: boolean;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date;
-
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     updatedAt: Date;
-
-    @BeforeInsert()
-    updateDateCreation() {
-        this.createdAt = new Date();
-    }
 
     @BeforeUpdate()
     updateDateUpdate() {
