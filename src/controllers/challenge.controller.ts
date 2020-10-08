@@ -69,7 +69,7 @@ export class ChallengeController extends BaseController {
 
                 const embed = createEmbed()
                     .setAuthor(message.author.username, message.author.avatarURL())
-                    .setTitle(challenge.title)
+                    .setTitle(`${args.id}: ${challenge.title}`)
                     .setDescription(challenge.description)
                     .addField('Difficulty', `Level ${challenge.level}`);
 
