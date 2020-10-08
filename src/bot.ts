@@ -1,9 +1,16 @@
-import { Client, Message, User } from 'discord.js';
 import {
-    ChallengeController,
-    ServerController,
-} from '@controllers';
-import { Command, Secrets } from './constants';
+    Client,
+    Message,
+    MessageEmbed,
+    User,
+} from 'discord.js';
+import { ChallengeController, ServerController } from '@controllers';
+import {
+    Command,
+    CommandUsage,
+    Color,
+    Secrets,
+} from './constants';
 
 class CtfBot {
     private client: Client = new Client();
@@ -109,20 +116,17 @@ class CtfBot {
     };
 
     private help = (message: Message): void => {
-        const commands = [
-            '- `ping`: Check bot availability',
-            '- `config <channel-name>`: Setup Discord server config',
-            '- `create <level> <title> <description>`: Create new CTF challenge',
-            '- `set-flag <ctf-id> <flag>`: Set flag to a given challenge',
-            '- `submit <ctf-id> <flag>`: Submit flag, please enclose the flag with `||` to avoid revealing it to other users',
-            '- `leaderboard`: Show leaderboard',
-            '- `list`: List CTF challenges',
-            '- `info <ctf-id>`: Show info on a given challenge',
-            '- `delete <ctf-id>`: Delete CTF challenge',
-            '- `help`: Show this help message',
-        ];
+        const embed = new MessageEmbed()
+            .setColor(Color.DEFAULT)
+            .setTitle('CTF Bot Commands')
+            .setDescription('To interact with CTF bot, use `-ctf` followed by any of the commands below.')
+            .addFields(CommandUsage.map((command) => ({
+                name: `\`${command.command}\``,
+                value: command.description,
+                inline: true,
+            })));
 
-        message.channel.send(`**To interact with CTF bot, use \`-ctf\` followed by any of the commands below:**\n${commands.join('\n')}`);
+        message.channel.send(embed);
     }
 }
 

@@ -1,10 +1,11 @@
-import { Message, TextChannel} from 'discord.js';
+import { Client, Message, TextChannel } from 'discord.js';
 import { ChallengeHandler } from '@handlers';
 import {
     Challenge,
     Server,
     User,
 } from '@models';
+import { createEmbed } from '@utils';
 import { BaseController } from './base.controller';
 
 export class ChallengeController extends BaseController {
@@ -66,7 +67,14 @@ export class ChallengeController extends BaseController {
                 const server = await Server.findOne({ guildId: message.guild.id });
                 const channel = message.guild.channels.cache.get(server.channelId) as TextChannel;
 
-                channel.send(`@everyone A new CTF challenge has been created by <@${authorId}>!\n\n**CTF Code:** ${args.id}\n**Title:** ${challenge.title}\n**Description/Clue:** ${challenge.description}\n**Level:** Level ${challenge.level}\n\nGood luck!`);
+                const embed = createEmbed()
+                    .setAuthor(message.author.username, message.author.avatarURL())
+                    .setTitle(challenge.title)
+                    .setDescription(challenge.description)
+                    .addField('Difficulty', `Level ${challenge.level}`);
+
+                channel.send(`@everyone A new CTF challenge has been created by <@${authorId}>!`);
+                channel.send(embed);
             }
         } catch (error) {
             message.channel.send(`Unable to set the flag: ${error.message}`);
@@ -90,8 +98,12 @@ export class ChallengeController extends BaseController {
 
         try {
             const answer = await ChallengeHandler.submit(challenge, flag, user);
+            const embed = createEmbed()
+                .setTitle(`A user has captured the flag for challenge ${args.id}`)
+                .setDescription(`<@${user.userId}> has captured the flag for challenge ${args.id} and gained ${answer.score} points!`)
+                .setTimestamp();
 
-            message.channel.send(`<@${user.userId}> has captured the flag for challenge ${args.id} and gained ${answer.score} points!`);
+            message.channel.send(embed);
         } catch (error) {
             message.channel.send(error.message);
         }
@@ -109,7 +121,11 @@ export class ChallengeController extends BaseController {
         }
 
         const list = challenges.reduce((list, challenge) => `${list}0x${challenge.id.toString(16).padStart(4, '0')}: ${challenge.title} (Level ${challenge.level}) ${challenge.solved ? '✅' : ''}\n`, '');
-        message.channel.send(`<@${user.userId}> **CHALLENGES FOR YOU:**\n${list}`);
+        const embed = createEmbed()
+            .setTitle(`List of CTF Challenges`)
+            .setDescription(`Challenges for you <@${user.userId}>:\n${list}`);
+
+        message.channel.send(embed);
     }
 
     delete = async (message: Message): Promise<void> => {
@@ -141,6 +157,14 @@ export class ChallengeController extends BaseController {
             return;
         }
 
-        message.channel.send(`**Challenge ${args.id}:** ${challenge.title}\n**Clue/Description:** ${challenge.description}\n**Difficulty:** Level ${challenge.level}\n**Solvers:** ${challenge.answers.length}`);
+        const author = message.client.users.cache.get(challenge.author.userId);
+        const embed = createEmbed()
+            .setAuthor(author.username, author.avatarURL())
+            .setTitle(`CTF ${args.id}: ${challenge.title}`)
+            .setDescription(challenge.description)
+            .addField('Difficulty', `Level ${challenge.level}`, true)
+            .addField('Solvers', challenge.answers.length, true);
+
+        message.channel.send(embed);
     }
 }

@@ -2,6 +2,7 @@ import { Message } from 'discord.js';
 import { Server } from '@models';
 import { UserHandler, ServerHandler } from '@handlers';
 import { BaseController } from './base.controller';
+import { createEmbed } from '@utils';
 
 export class ServerController extends BaseController {
     initialize = async (message: Message): Promise<void> => {
@@ -30,6 +31,10 @@ export class ServerController extends BaseController {
         }
 
         const ranking = leaderboard.reduce((ranking, user, rank) => `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`, '');
-        message.channel.send(`**LEADERBOARDS**\n${ranking}`);
+        const embed = createEmbed()
+            .setTitle('Leaderboards')
+            .setDescription(ranking);
+
+        message.channel.send(embed);
     }
 }
