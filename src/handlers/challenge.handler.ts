@@ -79,6 +79,7 @@ export class ChallengeHandler {
             )
             .where('challenge.serverId = :serverId', { serverId: server.id })
             .andWhere('challenge.flag IS NOT NULL')
+            .andWhere('challenge.authorId != :userId', { userId: user.id })
             .orderBy('challenge.id')
             .getRawMany();
 

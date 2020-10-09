@@ -47,7 +47,7 @@ export class ChallengeController extends BaseController {
         const authorId = message.author.id;
 
         if (!challenge) {
-            message.channel.send(`Challenge ${args.id} does not exist.`);
+            message.channel.send(`<@${authorId}> Challenge ${args.id} does not exist.`);
             return;
         }
 
@@ -61,7 +61,7 @@ export class ChallengeController extends BaseController {
 
         try {
             await ChallengeHandler.setFlag(challenge, flag);
-            message.channel.send(`Successfully set flag to challenge ${args.id}`);
+            message.channel.send(`<@${authorId}> Successfully set flag to challenge ${args.id}`);
 
             if (shouldNotifyEveryone) {
                 const server = await Server.findOne({ guildId: message.guild.id });
@@ -93,7 +93,12 @@ export class ChallengeController extends BaseController {
 
         const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
         if (!challenge) {
-            message.channel.send(`Challenge ${args.id} does not exist.`);
+            message.channel.send(`<@${user.userId}> Challenge ${args.id} does not exist.`);
+            return;
+        }
+
+        if (challenge.author.id === user.id) {
+            message.channel.send(`<@${user.userId}> You cannot answer your submitted challenge.`);
             return;
         }
 
@@ -124,7 +129,7 @@ export class ChallengeController extends BaseController {
         const list = challenges.reduce((list, challenge) => `${list}0x${challenge.id.toString(16).padStart(4, '0')}: ${challenge.title} (Level ${challenge.level}) ${challenge.solved ? '✅' : ''}\n`, '');
         const embed = createEmbed()
             .setTitle(`List of CTF Challenges`)
-            .setDescription(`Challenges for you <@${user.userId}>:\n${list}`);
+            .setDescription(`Challenges for you <@${user.userId}>:\n${list || 'No challenges for you.'}`);
 
         message.channel.send(embed);
     }
