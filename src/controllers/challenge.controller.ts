@@ -109,7 +109,8 @@ export class ChallengeController extends BaseController {
                 .setDescription(`<@${user.userId}> has captured the flag for challenge ${args.id} and gained ${answer.score} points!`)
                 .setTimestamp();
 
-            message.channel.send(embed);
+            const channel = message.guild.channels.cache.get(server.channelId) as TextChannel;
+            channel.send(embed);
         } catch (error) {
             message.channel.send(error.message);
         }
