@@ -1,5 +1,6 @@
 import { Message, TextChannel } from 'discord.js';
 import { Server, User } from '@models';
+import { createEmbed } from '@utils';
 import { mention } from '@utils/discord';
 import { BotError, ErrorCode } from '../errors';
 
@@ -94,5 +95,39 @@ export class BaseController {
 
         this.challengeList = pinned.find(message => message.embeds[0].title === 'List of CTF Challenges');
         this.leaderboard = pinned.find(message => message.embeds[0].title === 'Leaderboard');
+    }
+
+    announce = async ({ leaderboard = [], challenges = [] }): Promise<void> => {
+        // Send Leaderboard
+        if (leaderboard) {
+            const ranking = leaderboard.reduce((ranking, user, rank) => (
+                `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`
+            ), '');
+
+            const leaderboardEmbed = createEmbed()
+                .setTitle('Leaderboard')
+                .setDescription(ranking || 'No data for leaderboard yet.');
+
+            if (this.leaderboard) {
+                this.leaderboard.edit(leaderboardEmbed);
+            } else {
+                const message = await this.announcement.send(leaderboardEmbed);
+                message.pin();
+            }
+        }
+
+        // Send Challenges
+        if (challenges) {
+            const challengeEmbed = createEmbed()
+                .setTitle('List of CTF Challenges')
+                .setDescription('No challenges yet. Please add one to start the fun!');
+
+            if (this.challengeList) {
+                this.challengeList.edit(challengeEmbed);
+            } else {
+                const message = await this.announcement.send(challengeEmbed);
+                message.pin();
+            }
+        }
     }
 }

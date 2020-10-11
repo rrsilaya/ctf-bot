@@ -21,35 +21,10 @@ export class ServerController extends BaseController {
 
         // Send initial stuff here
         await this.loadAnnouncement();
-
-        // Check if server has initial data
         const data = {
             leaderboard: await UserHandler.getLeaderboard(this.server),
         };
-
-        if (!this.challengeList) {
-            const challenges = createEmbed()
-                .setTitle('List of CTF Challenges')
-                .setDescription('No challenges yet. Please add one to start the fun!');
-            const message = await this.announcement.send(challenges);
-
-            message.pin();
-        }
-
-        const ranking = data.leaderboard.reduce((ranking, user, rank) => (
-            `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`
-        ), '');
-
-        const leaderboard = createEmbed()
-            .setTitle('Leaderboard')
-            .setDescription(ranking || 'No data for leaderboard yet.');
-
-        if (this.leaderboard) {
-            this.leaderboard.edit(leaderboard);
-        } else {
-            const message = await this.announcement.send(leaderboard);
-            message.pin();
-        }
+        await this.announce(data);
     };
 
     getLeaderboard = async (): Promise<void> => {

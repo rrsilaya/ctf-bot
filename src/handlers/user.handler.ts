@@ -18,7 +18,7 @@ export class UserHandler {
         return user;
     }
 
-    static getLeaderboard = async (server: Server): Promise<ReadonlyArray<any>> => {
+    static getLeaderboard = async (server: Server): Promise<Array<any>> => {
         const users = await User.createQueryBuilder('user')
             .select('user')
             .addSelect('SUM(answer.score)', 'score')
