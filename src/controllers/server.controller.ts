@@ -36,16 +36,18 @@ export class ServerController extends BaseController {
             message.pin();
         }
 
-        if (!this.leaderboard) {
-            const ranking = data.leaderboard.reduce((ranking, user, rank) => (
-                `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`
-            ), '');
+        const ranking = data.leaderboard.reduce((ranking, user, rank) => (
+            `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`
+        ), '');
 
-            const leaderboard = createEmbed()
-                .setTitle('Leaderboard')
-                .setDescription(ranking || 'No data for leaderboard yet.');
+        const leaderboard = createEmbed()
+            .setTitle('Leaderboard')
+            .setDescription(ranking || 'No data for leaderboard yet.');
+
+        if (this.leaderboard) {
+            this.leaderboard.edit(leaderboard);
+        } else {
             const message = await this.announcement.send(leaderboard);
-
             message.pin();
         }
     };
