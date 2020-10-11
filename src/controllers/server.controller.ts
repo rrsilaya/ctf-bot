@@ -1,40 +1,41 @@
 import { Message } from 'discord.js';
 import { Server } from '@models';
 import { UserHandler, ServerHandler } from '@handlers';
-import { BaseController } from './base.controller';
+import { BaseController, ControllerArgs } from './base.controller';
 import { createEmbed } from '@utils';
 
 export class ServerController extends BaseController {
-    initialize = async (message: Message): Promise<void> => {
-        const { channelName } = this.getArgs(message, ['channelName']);
+    initialize = async (): Promise<void> => {
+        const { mention } = this.getArgs(['mention']);
 
-        const channel = message.guild.channels.cache.find(channel => (
-            channel.name === channelName
-        ));
-
-        if (!channel) {
-            message.channel.send(`Channel "${channelName}" not found.`);
+        const regex = /^<#([0-9]+)>$/;
+        if (!regex.test(mention)) {
+            this.messageAuthor('Invalid channel provided.');
             return;
         }
 
-        await ServerHandler.initialize(message.guild.id, channel.id);
-        message.channel.send(`CTF Challenges channel has been configured to <#${channel.id}>`);
+        const [, channelId] = mention.match(regex);
+
+        await ServerHandler.initialize(this.message.guild.id, channelId);
+        this.message.channel.send(`CTF Challenges channel has been configured to <#${channelId}>`);
+
+        // Send initial stuff here
     };
 
-    getLeaderboard = async (message: Message): Promise<void> => {
-        const server = await Server.findOne({ guildId: message.guild.id });
-        const leaderboard = await UserHandler.getLeaderboard(server);
+    getLeaderboard = async (): Promise<void> => {
+        const { channel } = this.message;
+        const leaderboard = await UserHandler.getLeaderboard(this.server);
 
         if (!leaderboard.length) {
-            message.channel.send('No data for leaderboard yet.');
+            channel.send('No data for leaderboard yet.');
             return;
         }
 
         const ranking = leaderboard.reduce((ranking, user, rank) => `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`, '');
         const embed = createEmbed()
-            .setTitle('Leaderboards')
+            .setTitle('Leaderboard')
             .setDescription(ranking);
 
-        message.channel.send(embed);
+        channel.send(embed);
     }
 }

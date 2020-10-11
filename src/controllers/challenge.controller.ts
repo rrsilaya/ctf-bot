@@ -1,4 +1,4 @@
-import { Client, Message, TextChannel } from 'discord.js';
+import { Message, TextChannel } from 'discord.js';
 import { ChallengeHandler } from '@handlers';
 import {
     Challenge,
@@ -10,7 +10,7 @@ import { BaseController } from './base.controller';
 
 export class ChallengeController extends BaseController {
     create = async (message: Message): Promise<void> => {
-        const args = this.getArgs(message, [
+        const args = this.getArgs([
             'level',
             'title',
             'description',
@@ -38,10 +38,10 @@ export class ChallengeController extends BaseController {
     setFlag = async (message: Message): Promise<void> => {
         message.delete(); // Make sure to delete flag
 
-        const args = this.getArgs(message, ['id', 'flag']);
-        const challengeId = this.parseChallengeId(message, args.id);
+        const args = this.getArgs(['id', 'flag']);
+        const challengeId = this.parseChallengeId(args.id);
 
-        const flag = this.parseFlag(message, args.flag);
+        const flag = this.parseFlag(args.flag);
         const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
 
         const authorId = message.author.id;
@@ -84,10 +84,10 @@ export class ChallengeController extends BaseController {
     submit = async (message: Message): Promise<void> => {
         message.delete(); // delete flag immediately
 
-        const args = this.getArgs(message, ['id', 'flag']);
-        const challengeId = this.parseChallengeId(message, args.id);
+        const args = this.getArgs(['id', 'flag']);
+        const challengeId = this.parseChallengeId(args.id);
 
-        const flag = this.parseFlag(message, args.flag);
+        const flag = this.parseFlag(args.flag);
         const server = await Server.findOne({ guildId: message.guild.id });
         const user = await User.registerOrFindOne(message.author.id, server);
 
@@ -136,8 +136,8 @@ export class ChallengeController extends BaseController {
     }
 
     delete = async (message: Message): Promise<void> => {
-        const args = this.getArgs(message, ['id']);
-        const challengeId = this.parseChallengeId(message, args.id);
+        const args = this.getArgs(['id']);
+        const challengeId = this.parseChallengeId(args.id);
 
         const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
         if (!challenge) {
@@ -155,8 +155,8 @@ export class ChallengeController extends BaseController {
     }
 
     info = async (message: Message): Promise<void> => {
-        const args = this.getArgs(message, ['id']);
-        const challengeId = this.parseChallengeId(message, args.id);
+        const args = this.getArgs(['id']);
+        const challengeId = this.parseChallengeId(args.id);
 
         const challenge = await Challenge.getByGuild(challengeId, message.guild.id);
         if (!challenge) {

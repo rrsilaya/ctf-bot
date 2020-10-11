@@ -16,7 +16,8 @@
             "@decorators": ["decorators/"],
             "@handlers": ["handlers/"],
             "@controllers": ["controllers/"],
-            "@utils": ["utils/"]
+            "@utils": ["utils/"],
+            "@utils/*": ["utils/*"]
         },
         "skipLibCheck": true
     }
