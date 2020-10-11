@@ -35,6 +35,7 @@ export enum Command {
     INFO = 'info',
     DELETE = 'delete',
     HELP = 'help',
+    TEST = 'test',
 };
 
 export const CommandUsage = [

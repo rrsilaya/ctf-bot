@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Message, TextChannel } from 'discord.js';
 import { Server, User } from '@models';
 import { mention } from '@utils/discord';
 import { BotError, ErrorCode } from '../errors';
@@ -14,10 +14,26 @@ export class BaseController {
     protected user: User;
     protected message: Message;
 
+    protected announcement: TextChannel;
+    protected challengeList: Message;
+    protected leaderboard: Message;
+
     constructor(settings: ControllerArgs) {
-        this.server = settings.server;
         this.user = settings.user;
         this.message = settings.message;
+
+        if (settings.server) {
+            this.setServer(settings.server);
+        }
+    }
+
+    setServer = (server: Server) => {
+        this.server = server;
+        this.announcement = this.message
+            .guild
+            .channels
+            .cache
+            .get(this.server.channelId) as TextChannel;
     }
 
     getArgs = (params: ReadonlyArray<string>): any => {
@@ -69,5 +85,14 @@ export class BaseController {
         const { author, channel } = this.message;
 
         channel.send(`${mention(author)} ${message}`);
+    }
+
+    loadAnnouncement = async (): Promise<void> => {
+        if (!this.announcement) return;
+
+        const pinned = await this.announcement.messages.fetchPinned();
+
+        this.challengeList = pinned.find(message => message.embeds[0].title === 'List of CTF Challenges');
+        this.leaderboard = pinned.find(message => message.embeds[0].title === 'Leaderboard');
     }
 }

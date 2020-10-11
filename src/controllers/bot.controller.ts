@@ -2,6 +2,7 @@ import { Message } from 'discord.js';
 import {
     ServerController,
 } from '@controllers';
+import { ServerGuard } from '@guards';
 import { createEmbed } from '@utils';
 import { mention } from '@utils/discord';
 import { CommandUsage, Command } from '../constants';
@@ -9,8 +10,14 @@ import { CommandUsage, Command } from '../constants';
 export class BotController {
     private server: ServerController;
 
-    handle = (message: Message, command: Command): void => {
-        this.server = new ServerController({ message });
+    handle = async (message: Message, command: Command): Promise<void> => {
+        let server;
+
+        if (command !== Command.CONFIG) {
+            server = await ServerGuard.getServer(message);
+        }
+
+        this.server = new ServerController({ message, server });
 
         const mapping = {
             [Command.PING]: this.ping,
@@ -23,6 +30,7 @@ export class BotController {
             // [Command.INFO]: this.challenge.info,
             // [Command.DELETE]: this.challenge.delete,
             [Command.HELP]: this.help,
+            // [Command.TEST]: this.server.test,
         };
 
         if (!(command in mapping)) {

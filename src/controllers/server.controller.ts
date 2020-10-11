@@ -1,7 +1,5 @@
-import { Message } from 'discord.js';
-import { Server } from '@models';
 import { UserHandler, ServerHandler } from '@handlers';
-import { BaseController, ControllerArgs } from './base.controller';
+import { BaseController } from './base.controller';
 import { createEmbed } from '@utils';
 
 export class ServerController extends BaseController {
@@ -16,10 +14,40 @@ export class ServerController extends BaseController {
 
         const [, channelId] = mention.match(regex);
 
-        await ServerHandler.initialize(this.message.guild.id, channelId);
-        this.message.channel.send(`CTF Challenges channel has been configured to <#${channelId}>`);
+        const server = await ServerHandler.initialize(this.message.guild.id, channelId);
+        this.setServer(server);
+
+        this.message.channel.send(`CTF Challenges channel has been configured to <#${channelId}>.`);
 
         // Send initial stuff here
+        await this.loadAnnouncement();
+
+        // Check if server has initial data
+        const data = {
+            leaderboard: await UserHandler.getLeaderboard(this.server),
+        };
+
+        if (!this.challengeList) {
+            const challenges = createEmbed()
+                .setTitle('List of CTF Challenges')
+                .setDescription('No challenges yet. Please add one to start the fun!');
+            const message = await this.announcement.send(challenges);
+
+            message.pin();
+        }
+
+        if (!this.leaderboard) {
+            const ranking = data.leaderboard.reduce((ranking, user, rank) => (
+                `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`
+            ), '');
+
+            const leaderboard = createEmbed()
+                .setTitle('Leaderboard')
+                .setDescription(ranking || 'No data for leaderboard yet.');
+            const message = await this.announcement.send(leaderboard);
+
+            message.pin();
+        }
     };
 
     getLeaderboard = async (): Promise<void> => {
