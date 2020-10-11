@@ -49,58 +49,24 @@ class CtfBot {
     };
 
     private handleCommand = (message: Message, command: string): void => {
-        try {
-            switch (command) {
-                case Command.PING:
-                    this.ping(message);
-                    break;
+        const mapping = {
+            [Command.PING]: this.ping,
+            [Command.CONFIG]: this.server.initialize,
+            [Command.CREATE]: this.challenge.create,
+            [Command.SET_FLAG]: this.challenge.setFlag,
+            [Command.SUBMIT]: this.challenge.submit,
+            [Command.LEADERBOARD]: this.server.getLeaderboard,
+            [Command.LIST]: this.challenge.list,
+            [Command.INFO]: this.challenge.info,
+            [Command.DELETE]: this.challenge.delete,
+            [Command.HELP]: this.help,
+        };
 
-                case Command.CONFIG:
-                    this.server.initialize(message);
-                    break;
-
-                case Command.CREATE:
-                    this.challenge.create(message);
-                    break;
-
-                case Command.SET_FLAG:
-                    this.challenge.setFlag(message);
-                    break;
-
-                case Command.SUBMIT:
-                    this.challenge.submit(message);
-                    break;
-
-                case Command.LEADERBOARD:
-                    this.server.getLeaderboard(message);
-                    break;
-
-                case Command.LIST:
-                    this.challenge.list(message);
-                    break;
-
-                case Command.INFO:
-                    this.challenge.info(message);
-                    break;
-
-                case Command.DELETE:
-                    this.challenge.delete(message);
-                    break;
-
-                case Command.HELP:
-                    this.help(message);
-                    break;
-
-                default:
-                    this.error(message);
-                    break;
-            }
-        } catch (error) {
-            console.log(error);
-
-            const message = error.message || 'An error occured.';
-            message.channel.send(`${CtfBot.mention(message.author)} ${message}`);
+        if (!(command in mapping)) {
+            return this.error(message);
         }
+
+        mapping[command](message);
     }
 
     public static mention = (user: User): string => {
@@ -112,7 +78,7 @@ class CtfBot {
     };
 
     private ping = (message: Message): void => {
-        message.channel.send('pong');
+        message.channel.send(`${CtfBot.mention(message.author)} pong`);
     };
 
     private help = (message: Message): void => {
