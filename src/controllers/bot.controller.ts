@@ -1,5 +1,6 @@
 import { Message } from 'discord.js';
 import {
+    ChallengeController,
     ServerController,
 } from '@controllers';
 import { ServerGuard } from '@guards';
@@ -9,46 +10,53 @@ import { CommandUsage, Command } from '../constants';
 
 export class BotController {
     private server: ServerController;
+    private challenge: ChallengeController;
 
-    handle = async (message: Message, command: Command): Promise<void> => {
-        let server;
+    constructor(private message: Message) {}
 
-        if (command !== Command.CONFIG) {
-            server = await ServerGuard.getServer(message);
-        }
+    handle = async (command: Command): Promise<void> => {
+        const publicCommands = [
+            Command.PING,
+            Command.CONFIG,
+            Command.HELP,
+        ];
 
-        this.server = new ServerController({ message, server });
+        const server = await ServerGuard.getServer(this.message, !publicCommands.some(cmd => cmd === command));
+
+        this.server = new ServerController({ message: this.message, server });
+        this.challenge = new ChallengeController({ message: this.message, server });
 
         const mapping = {
             [Command.PING]: this.ping,
-            [Command.CONFIG]: this.server.initialize,
-            // [Command.CREATE]: this.challenge.create,
-            // [Command.SET_FLAG]: this.challenge.setFlag,
-            // [Command.SUBMIT]: this.challenge.submit,
+            [Command.CONFIG]: this.server.handle,
+            [Command.CREATE]: this.challenge.create,
+            [Command.SET_FLAG]: this.challenge.setFlag,
+            [Command.SUBMIT]: this.challenge.submit,
             [Command.LEADERBOARD]: this.server.getLeaderboard,
-            // [Command.LIST]: this.challenge.list,
-            // [Command.INFO]: this.challenge.info,
-            // [Command.DELETE]: this.challenge.delete,
+            [Command.LIST]: this.challenge.list,
+            [Command.INFO]: this.challenge.info,
+            [Command.DELETE]: this.challenge.delete,
             [Command.HELP]: this.help,
-            // [Command.TEST]: this.server.test,
         };
 
         if (!(command in mapping)) {
-            return this.error(message);
+            return this.error();
         }
 
         mapping[command]();
     }
 
-    private error = (message: Message): void => {
-        message.channel.send(`${mention(message.author)} I wasn't able to recognize what you wanted to do.`);
+    private error = (): void => {
+        const { channel, author } = this.message;
+        channel.send(`${mention(author)} I wasn't able to recognize what you wanted to do.`);
     };
 
-    private ping = (message: Message): void => {
-        message.channel.send(`${mention(message.author)} pong`);
+    private ping = (): void => {
+        const { channel, author } = this.message;
+        channel.send(`${mention(author)} pong`);
     };
 
-    private help = (message: Message): void => {
+    private help = (): void => {
         const embed = createEmbed()
             .setTitle('CTF Bot Commands')
             .setDescription('To interact with CTF bot, use `-ctf` followed by any of the commands below.')
@@ -58,6 +66,6 @@ export class BotController {
                 inline: true,
             })));
 
-        message.channel.send(embed);
+        this.message.channel.send(embed);
     }
 }

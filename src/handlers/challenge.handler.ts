@@ -67,22 +67,26 @@ export class ChallengeHandler {
         return answer;
     }
 
-    static list = async (user: User, server: Server): Promise<any> => {
-        const result = await Challenge.createQueryBuilder('challenge')
+    static list = async (server: Server, user?: User): Promise<any> => {
+        let query = Challenge.createQueryBuilder('challenge')
             .select('challenge')
-            .addSelect('NOT ISNULL(answer.id)', 'solved')
-            .leftJoin(
-                'challenge.answers',
-                'answer',
-                'answer.userId = :userId',
-                { userId: user.id }
-            )
             .where('challenge.serverId = :serverId', { serverId: server.id })
             .andWhere('challenge.flag IS NOT NULL')
-            .andWhere('challenge.authorId != :userId', { userId: user.id })
-            .orderBy('challenge.id')
-            .getRawMany();
+            .orderBy('challenge.id');
 
+        if (user) {
+            query = query
+                .addSelect('NOT ISNULL(answer.id)', 'solved')
+                .leftJoin(
+                    'challenge.answers',
+                    'answer',
+                    'answer.userId = :userId',
+                    { userId: user.id }
+                )
+                .andWhere('challenge.authorId != :userId', { userId: user.id });
+        }
+
+        const result = await query.getRawMany();
         return result.map(row => ({
             id: row.challenge_id,
             title: row.challenge_title,

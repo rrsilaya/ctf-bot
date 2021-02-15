@@ -1,6 +1,7 @@
 import { Message, TextChannel } from 'discord.js';
 import { Server, User } from '@models';
-import { createEmbed } from '@utils';
+import { Dictionary } from '@models/types';
+import { createEmbed, regex as pattern, toHex } from '@utils';
 import { mention } from '@utils/discord';
 import { BotError, ErrorCode } from '../errors';
 
@@ -10,7 +11,7 @@ export interface ControllerArgs {
     message: Message;
 }
 
-export class BaseController {
+export abstract class BaseController {
     protected server: Server;
     protected user: User;
     protected message: Message;
@@ -37,11 +38,11 @@ export class BaseController {
             .get(this.server.channelId) as TextChannel;
     }
 
-    getArgs = (params: ReadonlyArray<string>): any => {
+    getArgs = (params: ReadonlyArray<string>, validateLength = true): Dictionary<any> => {
         const { content } = this.message;
         const [, ...args] = Array.from(content.match(/(?:[^\s"]+|"[^"]*")+/g));
 
-        if (args.length !== params.length) {
+        if (validateLength && args.length !== params.length) {
             const error = `Invalid argument count: received ${args.length}`;
 
             this.messageAuthor(error);
@@ -51,34 +52,33 @@ export class BaseController {
         return args.reduce((mapping, arg, i) => ({
             ...mapping,
             [params[i]]: arg.replace(/"/g, ''),
-        }), {});
+        }), {
+            // Array of args
+            _args: args,
+        });
     }
 
     parseChallengeId = (challengeId: string): number => {
-        const regex = /0x([0-9a-f]{4})/;
-
-        if (!regex.test(challengeId)) {
+        if (!pattern.CHALLENGE_ID.test(challengeId)) {
             const error = `Invalid challenge id: ${challengeId}`;
 
             this.messageAuthor(error);
             throw new BotError(ErrorCode.INVALID_ARGUMENT_COUNT, error);
         }
 
-        const [, id] = challengeId.match(regex);
+        const [, id] = challengeId.match(pattern.CHALLENGE_ID);
         return parseInt(id, 16);
     }
 
     parseFlag = (flag: string): string => {
-        const regex = /^\|?\|?(flag\{[A-Za-z0-9_]+\})\|?\|?$/;
-
-        if (!regex.test(flag)) {
+        if (!pattern.FLAG.test(flag)) {
             const error = 'Invalid flag format.';
 
             this.messageAuthor(error);
             throw new BotError(ErrorCode.INVALID_INPUT, error);
         }
 
-        const [, parsedFlag] = flag.match(regex);
+        const [, parsedFlag] = flag.match(pattern.FLAG);
         return parsedFlag;
     }
 
@@ -97,9 +97,9 @@ export class BaseController {
         this.leaderboard = pinned.find(message => message.embeds[0].title === 'Leaderboard');
     }
 
-    announce = async ({ leaderboard = [], challenges = [] }): Promise<void> => {
+    announce = async ({ leaderboard = [], challenges = [] }, isInitial = false): Promise<void> => {
         // Send Leaderboard
-        if (leaderboard) {
+        if (leaderboard.length || isInitial) {
             const ranking = leaderboard.reduce((ranking, user, rank) => (
                 `${ranking}${rank + 1}. <@${user.userId}> (${user.score} pts.)\n`
             ), '');
@@ -117,10 +117,14 @@ export class BaseController {
         }
 
         // Send Challenges
-        if (challenges) {
+        if (challenges.length || isInitial) {
+            const list = challenges.reduce(
+                (list, challenge) => `${list}${toHex(challenge.id)}: ${challenge.title} (Level ${challenge.level})\n`,
+                ''
+            );
             const challengeEmbed = createEmbed()
                 .setTitle('List of CTF Challenges')
-                .setDescription('No challenges yet. Please add one to start the fun!');
+                .setDescription(list || 'No challenges yet. Please add one to start the fun!');
 
             if (this.challengeList) {
                 this.challengeList.edit(challengeEmbed);
@@ -130,4 +134,9 @@ export class BaseController {
             }
         }
     }
+
+    error = (): void => {
+        const { channel, author } = this.message;
+        channel.send(`${mention(author)} I wasn't able to recognize what you wanted to do.`);
+    };
 }

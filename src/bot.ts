@@ -1,12 +1,12 @@
 import { Client, Message } from 'discord.js';
 import { BotController } from '@controllers';
+import { regex } from '@utils';
 import { Command, Secrets } from './constants';
 
 class CtfBot {
     static NAMESPACE = '-ctf';
 
     private client: Client = new Client();
-    private bot: BotController =  new BotController();
 
     init = () => {
         this.client.login(Secrets.BOT_TOKEN);
@@ -25,8 +25,10 @@ class CtfBot {
             const [, text] = message.content.match(pattern);
             message.content = text;
 
-            const [, command] = text.match(/^(\w+)/);
-            this.bot.handle(message, command as Command);
+            const [, command] = text.match(regex.COMMAND);
+
+            const bot = new BotController(message);
+            bot.handle(command as Command);
         });
     };
 }
