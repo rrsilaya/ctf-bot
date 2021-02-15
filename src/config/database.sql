@@ -1,6 +1,6 @@
 -- Database User
 DROP USER IF EXISTS 'ctf'@'localhost';
-CREATE USER 'ctf'@'localhost' IDENTIFIED BY 'ctf';
+CREATE USER 'ctf'@'localhost' IDENTIFIED WITH mysql_native_password BY 'ctf';
 
 -- Database
 CREATE DATABASE ctf;
