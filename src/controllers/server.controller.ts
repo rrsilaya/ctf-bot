@@ -55,6 +55,7 @@ export class ServerController extends BaseController {
 
     refresh = (_): void => {
         this.updateAnnouncement();
+        this.message.channel.send('CTF Bot for this server has been refreshed.');
     }
 
     getLeaderboard = async (): Promise<void> => {
