@@ -44,10 +44,6 @@ export const CommandUsage = [
         description: 'Check bot availability',
     },
     {
-        command: 'config <channel-name>',
-        description: 'Setup Discord server config',
-    },
-    {
         command: 'create <level> <title> <description>',
         description: 'Create new CTF challenge',
     },
