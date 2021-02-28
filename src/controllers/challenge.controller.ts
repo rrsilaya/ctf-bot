@@ -177,7 +177,11 @@ export class ChallengeController extends BaseController {
             return;
         }
 
-        const author = this.message.client.users.cache.get(challenge.author.userId);
+        let author = this.message.client.users.cache.get(challenge.author.userId);
+        if (!author) {
+            author = await this.message.client.users.fetch(challenge.author.userId);
+        }
+
         const embed = createEmbed()
             .setAuthor(author.username, author.avatarURL())
             .setTitle(`CTF ${args.id}: ${challenge.title}`)
